@@ -1,0 +1,5 @@
+-при добавлении ошибка в слове ответа Time added wit id "1"
+-при отправке запроса с несуществующим id ошибка 500 в логах
+2025-08-13T19:11:39.327121Z ERROR request{method=DELETE path=/activities/0 version=HTTP/1.1 remote.addr=172.17.0.1:56600}: warp::filters::trace: unable to process request (internal error) status=500 error=Some(Rejection(ActivitiesNotFound))
+2025-08-13T19:11:39.327285Z ERROR request{method=DELETE path=/activities/0 version=HTTP/1.1 remote.addr=172.17.0.1:56600}: warp::filters::trace: unable to process request (internal error) status=500 error=Some(Rejection([MethodNotAllowed, ActivitiesNotFound, MethodNotAllowed, MethodNotAllowed, MethodNotAllowed, MethodNotAllowed]))
+-сервер принимает в поле id спецсимволы и буквы
