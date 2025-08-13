@@ -1,0 +1,1783 @@
+{
+	"info": {
+		"_postman_id": "e5ce50da-15e5-43ef-b913-8cba8fc81bb5",
+		"name": "regression",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19224845",
+		"_collection_link": "https://devmaria.postman.co/workspace/qaroom~9c7910b0-9df1-4e56-8205-7eaf56ea992a/collection/19224845-e5ce50da-15e5-43ef-b913-8cba8fc81bb5?action=share&source=collection_link&creator=19224845"
+	},
+	"item": [
+		{
+			"name": "Positive-critical-path",
+			"item": [
+				{
+					"name": "add_activity",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const oldId = parseInt(pm.collectionVariables.get(\"id\"))\r",
+									"let id = 1;\r",
+									"if (oldId) {\r",
+									"    id = (oldId + 1).toString()\r",
+									"} \r",
+									"const titleLength = pm.collectionVariables.get(\"titleLength\")\r",
+									"const contentLength = Math.pow(2, 10);\r",
+									"const timeRange = 12 * 60;\r",
+									"\r",
+									"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+									"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+									"const time = Util.getRandomInt(timeRange);\r",
+									"\r",
+									"pm.collectionVariables.set(\"id\", id);\r",
+									"pm.collectionVariables.set(\"title\", title);\r",
+									"pm.collectionVariables.set(\"content\", content);\r",
+									"pm.collectionVariables.set(\"time\", time);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const reponseText = pm.response.text();\r",
+									"\r",
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has Activity ID\", () => {\r",
+									"    const id = pm.collectionVariables.get('id')\r",
+									"    pm.expect(reponseText).includes(`Activity { id: ActivityId(\"${id}\")`)\r",
+									"})\r",
+									"pm.test(\"The response has title\", () => {\r",
+									"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"title\"))\r",
+									"})\r",
+									"pm.test(\"The response has content\", () => {\r",
+									"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"content\"))\r",
+									"})\r",
+									"pm.test(\"The response has time\", () => {\r",
+									"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"time\"))\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Reponse time is less than 100ms\", () => {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/activities",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"activities"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check_activity_added",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const id = pm.collectionVariables.get(\"id\");\r",
+									"const startPagination = parseInt(id) - 1;\r",
+									"\r",
+									"pm.collectionVariables.set(\"id\", id);\r",
+									"pm.collectionVariables.set(\"startPagination\", startPagination);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const responseJson = pm.response.json()[0]\r",
+									"\r",
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The array key lenght should be equal 4\", () => {\r",
+									"    pm.expect(Object.keys(responseJson).length).to.be.eql(4);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has id\", () => {\r",
+									"    pm.expect(responseJson.id).to.be.eql(pm.collectionVariables.get(\"id\").toString())\r",
+									"})\r",
+									"pm.test(\"The response has title\", () => {\r",
+									"    pm.expect(responseJson.title).to.be.eql(pm.collectionVariables.get(\"title\"))\r",
+									"})\r",
+									"pm.test(\"The response has content\", () => {\r",
+									"    pm.expect(responseJson.content).to.be.eql(pm.collectionVariables.get(\"content\"))\r",
+									"})\r",
+									"pm.test(\"The response has time\", () => {\r",
+									"    pm.expect(responseJson.time).to.be.eql(pm.collectionVariables.get(\"time\"))\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/activities?start={{startPagination}}&end={{id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"activities"
+							],
+							"query": [
+								{
+									"key": "start",
+									"value": "{{startPagination}}"
+								},
+								{
+									"key": "end",
+									"value": "{{id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_activity",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const titleLength = pm.collectionVariables.get(\"titleLength\");\r",
+									"const contentLength = Math.pow(2, 12);\r",
+									"const timeRange = 12 * 60;\r",
+									"\r",
+									"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+									"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+									"const time = Util.getRandomInt(timeRange);\r",
+									"\r",
+									"pm.collectionVariables.set(\"title\", title);\r",
+									"pm.collectionVariables.set(\"content\", content);\r",
+									"pm.collectionVariables.set(\"time\", time);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"const reponseText = pm.response.text();\r",
+									"\r",
+									"pm.test(\"The response has Activity Id\", () => {\r",
+									"    pm.expect(reponseText.includes(`Activity { id: ActivityId(\"${pm.collectionVariables.get('id')}\")`)).to.be.true\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has title\", () => {\r",
+									"    pm.expect(reponseText.includes(pm.collectionVariables.get(\"title\"))).to.be.true\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has content\", () => {\r",
+									"    pm.expect(reponseText.includes(pm.collectionVariables.get(\"content\"))).to.be.true\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has time\", () => {\r",
+									"    pm.expect(reponseText.includes(pm.collectionVariables.get(\"time\"))).to.be.true\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/activities/{{id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"activities",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check_updated_activity",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const id = pm.collectionVariables.get(\"id\");\r",
+									"const startPagination = parseInt(id) - 1;\r",
+									"\r",
+									"pm.collectionVariables.set(\"id\", id);\r",
+									"pm.collectionVariables.set(\"startPagination\", startPagination);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"const responseJson = pm.response.json()[0]\r",
+									"\r",
+									"pm.test(\"The array key lenght should be equal 4\", () => {\r",
+									"    pm.expect(Object.keys(responseJson).length).to.be.eql(4);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has id\", () => {\r",
+									"    pm.expect(responseJson.id).to.be.eql(pm.collectionVariables.get(\"id\").toString())\r",
+									"})\r",
+									"pm.test(\"The response has title\", () => {\r",
+									"    pm.expect(responseJson.title).to.be.eql(pm.collectionVariables.get(\"title\"))\r",
+									"})\r",
+									"pm.test(\"The response has content\", () => {\r",
+									"    pm.expect(responseJson.content).to.be.eql(pm.collectionVariables.get(\"content\"))\r",
+									"})\r",
+									"pm.test(\"The response has time\", () => {\r",
+									"    pm.expect(responseJson.time).to.be.eql(pm.collectionVariables.get(\"time\"))\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/activities?start={{startPagination}}&end={{id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"activities"
+							],
+							"query": [
+								{
+									"key": "start",
+									"value": "{{startPagination}}"
+								},
+								{
+									"key": "end",
+									"value": "{{id}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add_time_spent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"const timeSpentId = Util.getIntFromText(pm.response.text());\r",
+									"pm.collectionVariables.set(\"timeSpentID\", timeSpentId)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const timeSpent = Util.getRandomInt(pm.collectionVariables.get(\"time\"))\r",
+									"pm.collectionVariables.set(\"timeSpent\", timeSpent)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"time\": {{timeSpent}},\r\n    \"activity_id\": \"{{id}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/time_spent",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"time_spent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check_time_spent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"const reponseText = pm.response.text();\r",
+									"\r",
+									"pm.test(\"The response has right timespent id\", () => {\r",
+									"   const timeSpentId = pm.collectionVariables.get('timeSpentID')\r",
+									"   pm.expect(reponseText).includes(`TimeSpent { id: TimeSpentId(\"${timeSpentId}\")`)\r",
+									"})\r",
+									"pm.test(\"The response has right timespent \", () => {\r",
+									"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"timeSpent\"))\r",
+									"})\r",
+									"pm.test(\"The response has right activity_id\", () => {\r",
+									"    const activityId = pm.collectionVariables.get('id')\r",
+									"    pm.expect(reponseText).includes(`ActivityId(\"${activityId}\")`)\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}}\r\n}"
+						},
+						"url": {
+							"raw": "{{url}}/time_spent/{{timeSpentID}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"time_spent",
+								"{{timeSpentID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update_activity_2",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const titleLength = pm.collectionVariables.get(\"titleLength\");\r",
+									"const contentLength = Math.pow(2, 12);\r",
+									"const timeRange = 12 * 60;\r",
+									"\r",
+									"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+									"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+									"const time = Util.getRandomInt(timeRange);\r",
+									"\r",
+									"pm.collectionVariables.set(\"title\", title);\r",
+									"pm.collectionVariables.set(\"content\", content);\r",
+									"pm.collectionVariables.set(\"time\", time);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"const reponseText = pm.response.text();\r",
+									"\r",
+									"pm.test(\"The response has Activity Id\", () => {\r",
+									"    pm.expect(reponseText.includes(`Activity { id: ActivityId(\"${pm.collectionVariables.get('id')}\")`)).to.be.true\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has title\", () => {\r",
+									"    pm.expect(reponseText.includes(pm.collectionVariables.get(\"title\"))).to.be.true\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has content\", () => {\r",
+									"    pm.expect(reponseText.includes(pm.collectionVariables.get(\"content\"))).to.be.true\r",
+									"})\r",
+									"\r",
+									"pm.test(\"The response has time\", () => {\r",
+									"    pm.expect(reponseText.includes(pm.collectionVariables.get(\"time\"))).to.be.true\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url}}/activities/{{id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"activities",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check_time_spent_exist_after_update",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"const reponseText = pm.response.text();\r",
+									"\r",
+									"pm.test(\"The response has right timespent id\", () => {\r",
+									"   const timeSpentId = pm.collectionVariables.get('timeSpentID')\r",
+									"   pm.expect(reponseText).includes(`TimeSpent { id: TimeSpentId(\"${timeSpentId}\")`)\r",
+									"})\r",
+									"pm.test(\"The response has right timespent \", () => {\r",
+									"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"timeSpent\"))\r",
+									"})\r",
+									"pm.test(\"The response has right activity_id\", () => {\r",
+									"    const activityId = pm.collectionVariables.get('id')\r",
+									"    pm.expect(reponseText).includes(`ActivityId(\"${activityId}\")`)\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/time_spent/{{timeSpentID}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"time_spent",
+								"{{timeSpentID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add_time_spent_more_than_exist",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const time = pm.collectionVariables.get(\"time\");\r",
+									"\r",
+									"const timeSpent = Util.getRandomInt(time) + time;\r",
+									"pm.collectionVariables.set(\"timeSpent\", timeSpent);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"})\r",
+									"\r",
+									"// const oldTimeSpent = pm.collectionVariables.get(\"timeSpentID\");\r",
+									"// const timeSpentId = Util.getIntFromText(pm.response.text());\r",
+									"\r",
+									"// pm.test(\"Old time spent should be more than old\", () => {\r",
+									"//     pm.expect(oldTimeSpent).to.not.be.null; \r",
+									"//     pm.expect(oldTimeSpent !== timeSpentId).to.be.true;\r",
+									"// });\r",
+									"\r",
+									"// pm.collectionVariables.set(\"timeSpentID\", timeSpentId);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"time\": {{timeSpent}},\r\n    \"activity_id\": \"{{id}}\"\r\n}"
+						},
+						"url": {
+							"raw": "{{url}}/time_spent",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"time_spent"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete_activity",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Text should contain true information\", () => {\r",
+									"    pm.expect(pm.response.text()).include(\"Activity deleted\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}}\r\n}"
+						},
+						"url": {
+							"raw": "{{url}}/activities/{{id}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"activities",
+								"{{id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "check_time_spent_exist_after_delete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(200);\r",
+									"})\r",
+									"\r",
+									"const reponseText = pm.response.text();\r",
+									"\r",
+									"pm.test(\"The response has right timespent id\", () => {\r",
+									"   const timeSpentId = pm.collectionVariables.get('timeSpentID')\r",
+									"   pm.expect(reponseText).includes(`TimeSpent { id: TimeSpentId(\"${timeSpentId}\")`)\r",
+									"})\r",
+									"pm.test(\"The response has right timespent \", () => {\r",
+									"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"timeSpent\"))\r",
+									"})\r",
+									"pm.test(\"The response has right activity_id\", () => {\r",
+									"    const activityId = pm.collectionVariables.get('id')\r",
+									"    pm.expect(reponseText).includes(`ActivityId(\"${activityId}\")`)\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{url}}/time_spent/{{timeSpentID}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"time_spent",
+								"{{timeSpentID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add_time_spent_when_activity_not_exist",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const time = pm.collectionVariables.get(\"time\");\r",
+									"\r",
+									"const timeSpent = Util.getRandomInt(time) + time;\r",
+									"pm.collectionVariables.set(\"timeSpent\", timeSpent);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 404\", () => {\r",
+									"    pm.expect(pm.response.code).to.eql(404);\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"time\": {{timeSpent}},\r\n    \"activity_id\": \"{{id}}\"\r\n}"
+						},
+						"url": {
+							"raw": "{{url}}/time_spent",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"time_spent"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"Util = {}\r",
+							"\r",
+							"Util.getRandomString = (lenght) => {\r",
+							"    let chars = \"abcdeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345689!@#$%^&*()';\";\r",
+							"    let result = '';\r",
+							"    for (let i = 0; i < lenght; i++) {\r",
+							"        result += chars.charAt(Util.getRandomInt(chars.length));\r",
+							"    }\r",
+							"    return result;\r",
+							"}\r",
+							"\r",
+							"Util.getRandomInt = (max) => Math.floor(Math.random()* max)\r",
+							"\r",
+							"Util.getIntFromText = (string) => {\r",
+							"    const regex = /\\d+/;\r",
+							"    const match = string.match(regex);\r",
+							"    return match[0]\r",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "NegativeCases",
+			"item": [
+				{
+					"name": "add",
+					"item": [
+						{
+							"name": "miss_one_field",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const oldId = parseInt(pm.collectionVariables.get(\"id\"))\r",
+											"let id = 1;\r",
+											"if (oldId) {\r",
+											"    id = (oldId + 1).toString()\r",
+											"} \r",
+											"const titleLength = pm.collectionVariables.get(\"titleLength\")\r",
+											"const contentLength = Math.pow(2, 10);\r",
+											"const timeRange = 12 * 60;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomInt(timeRange);\r",
+											"\r",
+											"pm.collectionVariables.set(\"id\", id);\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(422);\r",
+											"})\r",
+											"\r",
+											"const reponseText = pm.response.text();\r",
+											"\r",
+											"pm.test(\"Response text should exist information about filed wich missed\", () => {\r",
+											"    const responseText = pm.response.text();\r",
+											"    pm.expect(responseText).includes(\"missing field `id`\")\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    //\"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/activities",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "miss_several_field",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const oldId = parseInt(pm.collectionVariables.get(\"id\"))\r",
+											"let id = 1;\r",
+											"if (oldId) {\r",
+											"    id = (oldId + 1).toString()\r",
+											"} \r",
+											"const titleLength = pm.collectionVariables.get(\"titleLength\")\r",
+											"const contentLength = Math.pow(2, 10);\r",
+											"const timeRange = 12 * 60;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomInt(timeRange);\r",
+											"\r",
+											"pm.collectionVariables.set(\"id\", id);\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(422);\r",
+											"})\r",
+											"\r",
+											"const reponseText = pm.response.text();\r",
+											"\r",
+											"pm.test(\"Response text should exist information about missed Id\", () => {\r",
+											"    const responseText = pm.response.text();\r",
+											"    pm.expect(responseText).includes(\"missing field `id`\")\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response text should exist information about missed Time\", () => {\r",
+											"    const responseText = pm.response.text();\r",
+											"    pm.expect(responseText).includes(\"missing field `time`\")\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    //\"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\"\r\n    //\"time\": {{time}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/activities",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "miss_body",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const oldId = parseInt(pm.collectionVariables.get(\"id\"))\r",
+											"let id = 1;\r",
+											"if (oldId) {\r",
+											"    id = (oldId + 1).toString()\r",
+											"} \r",
+											"const titleLength = pm.collectionVariables.get(\"titleLength\")\r",
+											"const contentLength = Math.pow(2, 10);\r",
+											"const timeRange = 12 * 60;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomInt(timeRange);\r",
+											"\r",
+											"pm.collectionVariables.set(\"id\", id);\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(422);\r",
+											"})\r",
+											"\r",
+											"const reponseText = pm.response.text();\r",
+											"\r",
+											"pm.test(\"Response text should exist information about missed body\", () => {\r",
+											"    const responseText = pm.response.text();\r",
+											"    pm.expect(responseText).includes(\"EOF while parsing a value\")\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{url}}/activities",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "wrong_data_type",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const oldId = parseInt(pm.collectionVariables.get(\"id\"))\r",
+											"let id = 1;\r",
+											"if (oldId) {\r",
+											"    id = (oldId + 1).toString()\r",
+											"} \r",
+											"const titleLength = pm.collectionVariables.get(\"titleLength\")\r",
+											"const contentLength = Math.pow(2, 10);\r",
+											"const timeRange = 12 * 60;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomInt(timeRange);\r",
+											"\r",
+											"pm.collectionVariables.set(\"id\", id);\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(422);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response text should exist information about invalid type\", () => {\r",
+											"    const responseText = pm.response.text();\r",
+											"    pm.expect(responseText).includes(\"invalid type: string\")\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": \"{{time}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/activities",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "body_type_text",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const oldId = parseInt(pm.collectionVariables.get(\"id\"))\r",
+											"let id = 1;\r",
+											"if (oldId) {\r",
+											"    id = (oldId + 1).toString()\r",
+											"} \r",
+											"const titleLength = pm.collectionVariables.get(\"titleLength\")\r",
+											"const contentLength = Math.pow(2, 10);\r",
+											"const timeRange = 12 * 60;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomInt(timeRange);\r",
+											"\r",
+											"pm.collectionVariables.set(\"id\", id);\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(422);\r",
+											"})\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": \"{{time}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "text"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/activities",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "edit",
+					"item": [
+						{
+							"name": "update_activity_with_empty_value",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(422);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response text should has information about missed time\", () => {\r",
+											"    const responseText = pm.response.text();\r",
+											"    pm.expect(responseText).includes(\"missing field `time`\")\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const titleLength = pm.collectionVariables.get(\"titleLength\");\r",
+											"const contentLength = Math.pow(2, 12);\r",
+											"const timeRange = 12 * 60;\r",
+											"const id = parseInt(pm.collectionVariables.get(\"id\")) + 1;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomInt(timeRange);\r",
+											"\r",
+											"pm.collectionVariables.set(\"id\", id);\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/activities/{{id}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_activity_with_incorect_data_type",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(422);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response text has information about invalid type\", () => {\r",
+											"    const responseText = pm.response.text();\r",
+											"    pm.expect(responseText).includes(\"invalid type: string\")\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const titleLength = pm.collectionVariables.get(\"titleLength\");\r",
+											"const contentLength = Math.pow(2, 12);\r",
+											"const timeRange = 12 * 60;\r",
+											"const id = parseInt(pm.collectionVariables.get(\"id\")) + 1;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomInt(timeRange);\r",
+											"\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);\r",
+											"pm.collectionVariables.set(\"id\", id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": \"{{time}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/activities/{{id}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_activity_add_not_exist_field",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(200);\r",
+											"})\r",
+											"\r",
+											"const reponseText = pm.response.text();\r",
+											"\r",
+											"pm.test(\"The response has Activity ID\", () => {\r",
+											"    const id = pm.collectionVariables.get('id')\r",
+											"    pm.expect(reponseText).includes(`Activity updated: Activity { id: ActivityId(\"${id}\")`)\r",
+											"})\r",
+											"pm.test(\"The response has title\", () => {\r",
+											"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"title\"))\r",
+											"})\r",
+											"pm.test(\"The response has content\", () => {\r",
+											"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"content\"))\r",
+											"})\r",
+											"pm.test(\"The response has time\", () => {\r",
+											"    pm.expect(reponseText).includes(pm.collectionVariables.get(\"time\"))\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Reponse time is less than 100ms\", () => {\r",
+											"    pm.expect(pm.response.responseTime).to.be.below(100);\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const titleLength = pm.collectionVariables.get(\"titleLength\");\r",
+											"const contentLength = Math.pow(2, 12);\r",
+											"const timeRange = 12 * 60;\r",
+											"const id = parseInt(pm.collectionVariables.get(\"id\")) + 1;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomInt(timeRange);\r",
+											"\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);\r",
+											"pm.collectionVariables.set(\"id\", id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}},\r\n    \"test\": \"{{test}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/activities/{{id}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update_activity_add_with_wrong_format_of_filed_type",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 422\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(422);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Response text has information about invalid format of filed type\", () => {\r",
+											"    const responseText = pm.response.text();\r",
+											"    pm.expect(responseText).includes(\"Request body deserialize error: expected value\")\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const titleLength = pm.collectionVariables.get(\"titleLength\");\r",
+											"const contentLength = Math.pow(2, 12);\r",
+											"const timeRange = 12 * 60;\r",
+											"const id = parseInt(pm.collectionVariables.get(\"id\")) + 1;\r",
+											"\r",
+											"const title = Util.getRandomString(Util.getRandomInt(titleLength));\r",
+											"const content = Util.getRandomString(Util.getRandomInt(contentLength));\r",
+											"const time = Util.getRandomString(Util.getRandomInt(timeRange));\r",
+											"\r",
+											"pm.collectionVariables.set(\"title\", title);\r",
+											"pm.collectionVariables.set(\"content\", content);\r",
+											"pm.collectionVariables.set(\"time\", time);\r",
+											"pm.collectionVariables.set(\"id\", id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}}\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/activities/{{id}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"const url = pm.collectionVariables.get(\"url\")\r",
+									"const id = parseInt(pm.collectionVariables.get(\"id\")) + 1\r",
+									"\r",
+									"const reqBody = {\r",
+									"    \"id\": `${id}`,\r",
+									"    \"title\": `${Util.getRandomString(60)}`,\r",
+									"    \"content\": `${Util.getRandomString(1024)}`,\r",
+									"    \"time\": Util.getRandomInt(12 * 60)\r",
+									"}\r",
+									"\r",
+									"const postRequest = {\r",
+									"    url: `${url}/activities`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'json',\r",
+									"        raw: JSON.stringify(reqBody)\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(postRequest, (error, response) => {\r",
+									"    pm.test('response should be okay to process', () => {\r",
+									"        pm.expect(error).to.equal(null);\r",
+									"        pm.expect(response).to.have.property('code', 200)\r",
+									"    })\r",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"const url = pm.collectionVariables.get(\"url\");\r",
+									"const id = parseInt(pm.collectionVariables.get(\"id\"));\r",
+									"\r",
+									"const postRequest = {\r",
+									"    url: `${url}/activities/${id}`,\r",
+									"    method: 'DELETE',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(postRequest, (error, response) => {\r",
+									"    pm.test('response should be okay to process', () => {\r",
+									"        pm.expect(error).to.equal(null);\r",
+									"        pm.expect(response).to.have.property('code', 200)\r",
+									"    })\r",
+									"});"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "delete",
+					"item": [
+						{
+							"name": "delete_non_existing_activity",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 416\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(416);\r",
+											"})\r",
+											"\r",
+											"pm.test(\"Text should contain information\", () => {\r",
+											"    pm.expect(pm.response.text()).include(\"Activities not Found\")\r",
+											"})"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"{{id}}\",\r\n    \"title\": \"{{title}}\",\r\n    \"content\": \"{{content}}\",\r\n    \"time\": {{time}}\r\n}"
+								},
+								"url": {
+									"raw": "{{url}}/activities/{{id}}",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"activities",
+										"{{id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "add_time",
+					"item": [
+						{
+							"name": "add_time_spent_0",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 200\", () => {\r",
+											"    pm.expect(pm.response.code).to.eql(200);\r",
+											"})\r",
+											"\r",
+											"const timeSpentId = Util.getIntFromText(pm.response.text());\r",
+											"pm.collectionVariables.set(\"timeSpentID\", timeSpentId)"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"const id = parseInt(pm.collectionVariables.get(\"id\")) + 1\r",
+											"const timeSpent = 0;\r",
+											"\r",
+											"pm.collectionVariables.set(\"timeSpent\", timeSpent);\r",
+											"pm.collectionVariables.set(\"id\", id);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"time\": {{timeSpent}},\r\n    \"activity_id\": \"{{id}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{url}}/time_spent",
+									"host": [
+										"{{url}}"
+									],
+									"path": [
+										"time_spent"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"const url = pm.collectionVariables.get(\"url\")\r",
+									"const id = parseInt(pm.collectionVariables.get(\"id\")) + 1\r",
+									"\r",
+									"const reqBody = {\r",
+									"    \"id\": `${id}`,\r",
+									"    \"title\": `${Util.getRandomString(60)}`,\r",
+									"    \"content\": `${Util.getRandomString(1024)}`,\r",
+									"    \"time\": Util.getRandomInt(12 * 60)\r",
+									"}\r",
+									"\r",
+									"const postRequest = {\r",
+									"    url: `${url}/activities`,\r",
+									"    method: 'POST',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    },\r",
+									"    body: {\r",
+									"        mode: 'json',\r",
+									"        raw: JSON.stringify(reqBody)\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(postRequest, (error, response) => {\r",
+									"    pm.test('response should be okay to process', () => {\r",
+									"        pm.expect(error).to.equal(null);\r",
+									"        pm.expect(response).to.have.property('code', 200)\r",
+									"    })\r",
+									"});"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"const url = pm.collectionVariables.get(\"url\");\r",
+									"const id = parseInt(pm.collectionVariables.get(\"id\"));\r",
+									"\r",
+									"const postRequest = {\r",
+									"    url: `${url}/activities/${id}`,\r",
+									"    method: 'DELETE',\r",
+									"    header: {\r",
+									"        'Content-Type': 'application/json',\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"pm.sendRequest(postRequest, (error, response) => {\r",
+									"    pm.test('response should be okay to process', () => {\r",
+									"        pm.expect(error).to.equal(null);\r",
+									"        pm.expect(response).to.have.property('code', 200)\r",
+									"    })\r",
+									"});"
+								]
+							}
+						}
+					]
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"Util = {}\r",
+							"\r",
+							"Util.getRandomString = (lenght) => {\r",
+							"    let chars = \"abcdeghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ012345689!@#$%^&*()';\";\r",
+							"    let result = '';\r",
+							"    for (let i = 0; i < lenght; i++) {\r",
+							"        result += chars.charAt(Util.getRandomInt(chars.length));\r",
+							"    }\r",
+							"    return result;\r",
+							"}\r",
+							"\r",
+							"Util.getRandomInt = (max) => Math.floor(Math.random()* max)\r",
+							"\r",
+							"Util.getIntFromText = (string) => {\r",
+							"    const regex = /\\d+/;\r",
+							"    const match = string.match(regex);\r",
+							"    return match[0]\r",
+							"}"
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "id",
+			"value": ""
+		},
+		{
+			"key": "title",
+			"value": ""
+		},
+		{
+			"key": "content",
+			"value": ""
+		},
+		{
+			"key": "time",
+			"value": ""
+		},
+		{
+			"key": "startPagination",
+			"value": ""
+		},
+		{
+			"key": "timeSpent",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "timeSpentID",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
